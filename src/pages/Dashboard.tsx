@@ -21,6 +21,7 @@ import { db } from "@/lib/firebase";
 import { BillingRecord } from "@/types/billing";
 import { BillingDataTable } from "@/components/BillingDataTable";
 import { ImageUpload } from "@/components/ImageUpload";
+import { useFirebaseStatus, mockBillingRecords } from "@/hooks/useFirebase";
 
 interface DashboardStats {
   totalRecords: number;
@@ -38,8 +39,36 @@ export default function Dashboard() {
   });
   const [recentRecords, setRecentRecords] = useState<BillingRecord[]>([]);
   const [showUpload, setShowUpload] = useState(false);
+  const { isConfigured, isLoading: firebaseLoading } = useFirebaseStatus();
 
   useEffect(() => {
+    if (firebaseLoading) return;
+
+    if (!isConfigured || !db) {
+      // Use mock data when Firebase is not configured
+      const mockStats = mockBillingRecords.reduce(
+        (acc, record) => {
+          acc.totalRecords++;
+          if (record.status === "completed") {
+            acc.completedRecords++;
+            acc.totalAmount += record.totalAmount || 0;
+          } else if (record.status === "processing") {
+            acc.processingRecords++;
+          }
+          return acc;
+        },
+        {
+          totalRecords: 0,
+          completedRecords: 0,
+          processingRecords: 0,
+          totalAmount: 0,
+        },
+      );
+      setStats(mockStats);
+      setRecentRecords(mockBillingRecords.slice(0, 5));
+      return;
+    }
+
     // Listen to all records for stats
     const unsubscribeAll = onSnapshot(
       collection(db, "billing-records"),
@@ -92,7 +121,7 @@ export default function Dashboard() {
       unsubscribeAll();
       unsubscribeRecent();
     };
-  }, []);
+  }, [isConfigured, firebaseLoading]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {

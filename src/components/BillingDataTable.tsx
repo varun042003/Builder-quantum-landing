@@ -14,9 +14,11 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { BillingRecord } from "@/types/billing";
+import { useFirebaseStatus, mockBillingRecords } from "@/hooks/useFirebase";
 import { cn } from "@/lib/utils";
 
 interface BillingDataTableProps {
@@ -30,8 +32,22 @@ export function BillingDataTable({
 }: BillingDataTableProps) {
   const [records, setRecords] = useState<BillingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isConfigured, isLoading: firebaseLoading } = useFirebaseStatus();
 
   useEffect(() => {
+    if (firebaseLoading) return;
+
+    if (!isConfigured || !db) {
+      // Use mock data when Firebase is not configured
+      const mockData = maxResults
+        ? mockBillingRecords.slice(0, maxResults)
+        : mockBillingRecords;
+      setRecords(mockData);
+      setLoading(false);
+      return;
+    }
+
+    // Use real Firebase data when configured
     let q = query(
       collection(db, "billing-records"),
       orderBy("extractedAt", "desc"),
@@ -52,7 +68,7 @@ export function BillingDataTable({
     });
 
     return () => unsubscribe();
-  }, [maxResults]);
+  }, [maxResults, isConfigured, firebaseLoading]);
 
   const getStatusIcon = (status: BillingRecord["status"]) => {
     switch (status) {
@@ -95,7 +111,7 @@ export function BillingDataTable({
     });
   };
 
-  if (loading) {
+  if (loading || firebaseLoading) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-8">
         <div className="animate-pulse space-y-4">
@@ -110,8 +126,9 @@ export function BillingDataTable({
           ))}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   if (records.length === 0) {
     return (
@@ -134,8 +151,26 @@ export function BillingDataTable({
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="space-y-4">
+      {!isConfigured && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">
+                Demo Mode - Firebase Not Configured
+              </h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                Showing sample data. Configure Firebase to use real billing records.
+                See README.md for setup instructions.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
