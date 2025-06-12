@@ -11,6 +11,7 @@ import { Search, Filter, Download, Upload, FileText } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { BillingRecord } from "@/types/billing";
 import { BillingDataTable } from "@/components/BillingDataTable";
+import { useFirebaseStatus, mockBillingRecords } from "@/hooks/useFirebase";
 
 export default function Records() {
   const [records, setRecords] = useState<BillingRecord[]>([]);
@@ -19,8 +20,19 @@ export default function Records() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const { isConfigured, isLoading: firebaseLoading } = useFirebaseStatus();
 
   useEffect(() => {
+    if (firebaseLoading) return;
+
+    if (!isConfigured || !db) {
+      // Use mock data when Firebase is not configured
+      setRecords(mockBillingRecords);
+      setLoading(false);
+      return;
+    }
+
+    // Use real Firebase data when configured
     const unsubscribe = onSnapshot(
       query(collection(db, "billing-records"), orderBy("extractedAt", "desc")),
       (snapshot) => {
@@ -35,7 +47,7 @@ export default function Records() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [isConfigured, firebaseLoading]);
 
   useEffect(() => {
     let filtered = records;
@@ -255,7 +267,7 @@ export default function Records() {
       </div>
 
       {/* Records Table */}
-      {loading ? (
+      {loading || firebaseLoading ? (
         <div className="bg-white border border-gray-200 rounded-lg p-8">
           <div className="animate-pulse space-y-4">
             {[...Array(5)].map((_, i) => (

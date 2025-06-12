@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { BillingRecord } from "@/types/billing";
+import { useFirebaseStatus, mockBillingRecords } from "@/hooks/useFirebase";
 
 export default function RecordDetail() {
   const { id } = useParams<{ id: string }>();
@@ -22,10 +23,23 @@ export default function RecordDetail() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<BillingRecord>>({});
+  const { isConfigured, isLoading: firebaseLoading } = useFirebaseStatus();
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || firebaseLoading) return;
 
+    if (!isConfigured || !db) {
+      // Use mock data when Firebase is not configured
+      const mockRecord = mockBillingRecords.find((r) => r.id === id);
+      if (mockRecord) {
+        setRecord(mockRecord);
+        setEditForm(mockRecord);
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Use real Firebase data when configured
     const fetchRecord = async () => {
       try {
         const docRef = doc(db, "billing-records", id);
@@ -46,10 +60,18 @@ export default function RecordDetail() {
     };
 
     fetchRecord();
-  }, [id]);
+  }, [id, isConfigured, firebaseLoading]);
 
   const handleSave = async () => {
     if (!id || !editForm) return;
+
+    if (!isConfigured || !db) {
+      // In demo mode, just update the local state
+      setRecord({ ...record!, ...editForm });
+      setEditing(false);
+      console.log("Demo mode: Changes saved locally only");
+      return;
+    }
 
     try {
       const docRef = doc(db, "billing-records", id);

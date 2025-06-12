@@ -5,6 +5,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, addDoc } from "firebase/firestore";
 import { storage, db } from "@/lib/firebase";
 import { UploadStatus } from "@/types/billing";
+import { useFirebaseStatus } from "@/hooks/useFirebase";
 import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
@@ -20,6 +21,7 @@ export function ImageUpload({ onUploadComplete, className }: ImageUploadProps) {
   const [uploadedFiles, setUploadedFiles] = useState<
     Array<{ name: string; status: string; url?: string }>
   >([]);
+  const { isConfigured } = useFirebaseStatus();
 
   const uploadFile = async (file: File) => {
     const storageRef = ref(
@@ -64,6 +66,40 @@ export function ImageUpload({ onUploadComplete, className }: ImageUploadProps) {
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
+      if (!isConfigured || !storage || !db) {
+        // In demo mode, simulate upload
+        setUploadStatus({ uploading: true, progress: 0 });
+
+        for (const file of acceptedFiles) {
+          setUploadedFiles((prev) => [
+            ...prev,
+            { name: file.name, status: "uploading" },
+          ]);
+
+          // Simulate upload progress
+          for (let progress = 0; progress <= 100; progress += 20) {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            setUploadStatus({ uploading: true, progress });
+          }
+
+          const mockUrl = `https://via.placeholder.com/400x600/f3f4f6/374151?text=${encodeURIComponent(file.name)}`;
+
+          setUploadedFiles((prev) =>
+            prev.map((f) =>
+              f.name === file.name
+                ? { ...f, status: "completed", url: mockUrl }
+                : f,
+            ),
+          );
+
+          onUploadComplete?.(mockUrl, file.name);
+        }
+
+        setUploadStatus({ uploading: false, progress: 0 });
+        return;
+      }
+
+      // Real Firebase upload
       setUploadStatus({ uploading: true, progress: 0 });
 
       for (const file of acceptedFiles) {
@@ -93,7 +129,7 @@ export function ImageUpload({ onUploadComplete, className }: ImageUploadProps) {
 
       setUploadStatus({ uploading: false, progress: 0 });
     },
-    [onUploadComplete],
+    [onUploadComplete, isConfigured],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
