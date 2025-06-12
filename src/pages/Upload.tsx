@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ImageUpload } from "@/components/ImageUpload";
-import { ArrowLeft, FileText, Upload as UploadIcon } from "lucide-react";
+import { ImageUploadBackend } from "@/components/ImageUploadBackend";
+import { ArrowLeft, FileText, Upload as UploadIcon, Cpu } from "lucide-react";
 
 export default function Upload() {
   const navigate = useNavigate();
@@ -43,22 +43,29 @@ export default function Upload() {
                 </h2>
               </div>
 
-              <ImageUpload onUploadComplete={handleUploadComplete} />
+              <ImageUploadBackend onUploadComplete={handleUploadComplete} />
 
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-sm font-medium text-blue-900 mb-2">
-                  Processing Information
-                </h3>
+                <div className="flex items-center mb-2">
+                  <Cpu className="w-4 h-4 text-blue-600 mr-2" />
+                  <h3 className="text-sm font-medium text-blue-900">
+                    OCR Processing Information
+                  </h3>
+                </div>
                 <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Images are processed using Tesseract.js OCR engine</li>
                   <li>
-                    • Images will be automatically processed using OCR
-                    technology
+                    • Backend server extracts text and billing data
+                    automatically
                   </li>
                   <li>
-                    • Data extraction typically takes 30-60 seconds per document
+                    • Processing typically takes 30-60 seconds per document
                   </li>
-                  <li>• You'll be notified when processing is complete</li>
-                  <li>• Supported formats: PNG, JPG, JPEG, WEBP</li>
+                  <li>• Results are stored and can be exported to Excel</li>
+                  <li>
+                    • Supported formats: PNG, JPG, JPEG, WEBP, BMP, TIFF (Max
+                    10MB)
+                  </li>
                 </ul>
               </div>
             </div>
@@ -89,7 +96,7 @@ export default function Upload() {
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span>Tax information</span>
+                  <span>Tax and additional details</span>
                 </li>
               </ul>
             </div>

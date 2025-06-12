@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { BillingRecord } from "@/types/billing";
-import { BillingDataTable } from "@/components/BillingDataTable";
-import { ImageUpload } from "@/components/ImageUpload";
+import { BillingDataTableBackend } from "@/components/BillingDataTableBackend";
+import { ImageUploadBackend } from "@/components/ImageUploadBackend";
 import { useFirebaseStatus, mockBillingRecords } from "@/hooks/useFirebase";
 
 interface DashboardStats {
@@ -219,7 +219,7 @@ export default function Dashboard() {
             </div>
 
             {showUpload ? (
-              <ImageUpload onUploadComplete={handleUploadComplete} />
+              <ImageUploadBackend onUploadComplete={handleUploadComplete} />
             ) : (
               <div className="text-center py-8">
                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -308,7 +308,7 @@ export default function Dashboard() {
             View all →
           </Link>
         </div>
-        <BillingDataTable maxResults={10} showPagination={false} />
+        <BillingDataTableBackend maxResults={10} showPagination={false} />
       </div>
     </div>
   );

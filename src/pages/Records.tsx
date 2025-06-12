@@ -10,8 +10,9 @@ import {
 import { Search, Filter, Download, Upload, FileText } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { BillingRecord } from "@/types/billing";
-import { BillingDataTable } from "@/components/BillingDataTable";
+import { BillingDataTableBackend } from "@/components/BillingDataTableBackend";
 import { useFirebaseStatus, mockBillingRecords } from "@/hooks/useFirebase";
+import { apiClient } from "@/lib/api";
 
 export default function Records() {
   const [records, setRecords] = useState<BillingRecord[]>([]);
@@ -95,50 +96,15 @@ export default function Records() {
     setFilteredRecords(filtered);
   }, [records, searchTerm, statusFilter, dateFilter]);
 
-  const exportToCSV = () => {
-    const completedRecords = filteredRecords.filter(
-      (r) => r.status === "completed",
-    );
-
-    if (completedRecords.length === 0) {
-      alert("No completed records to export");
-      return;
+  const exportToExcel = async () => {
+    try {
+      await apiClient.downloadExport();
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert(
+        "Failed to export data. Please ensure the backend server is running.",
+      );
     }
-
-    const headers = [
-      "Invoice Number",
-      "Vendor",
-      "Date",
-      "Amount",
-      "Currency",
-      "Status",
-    ];
-    const csvContent = [
-      headers.join(","),
-      ...completedRecords.map((record) =>
-        [
-          record.invoiceNumber || "",
-          record.vendor || "",
-          record.date || "",
-          record.totalAmount || "",
-          record.currency || "USD",
-          record.status,
-        ].join(","),
-      ),
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `billing-records-${new Date().toISOString().split("T")[0]}.csv`,
-    );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const getTotalAmount = () => {
@@ -168,11 +134,11 @@ export default function Records() {
           </div>
           <div className="flex items-center space-x-3 mt-4 sm:mt-0">
             <button
-              onClick={exportToCSV}
+              onClick={exportToExcel}
               className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             >
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              Export Excel
             </button>
             <Link
               to="/upload"
@@ -300,7 +266,7 @@ export default function Records() {
           </Link>
         </div>
       ) : (
-        <BillingDataTable />
+        <BillingDataTableBackend />
       )}
     </div>
   );
