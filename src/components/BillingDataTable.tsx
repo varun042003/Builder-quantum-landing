@@ -126,26 +126,44 @@ export function BillingDataTable({
           ))}
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   if (records.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          No billing records found
-        </h3>
-        <p className="text-gray-500 mb-4">
-          Start by uploading your first billing document.
-        </p>
-        <Link
-          to="/upload"
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Upload Document
-        </Link>
+      <div className="space-y-4">
+        {!isConfigured && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
+              <div>
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Demo Mode - Firebase Not Configured
+                </h3>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Configure Firebase to use real billing records. See README.md
+                  for setup instructions.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No billing records found
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Start by uploading your first billing document.
+          </p>
+          <Link
+            to="/upload"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Upload Document
+          </Link>
+        </div>
       </div>
     );
   }
@@ -161,8 +179,8 @@ export function BillingDataTable({
                 Demo Mode - Firebase Not Configured
               </h3>
               <p className="text-sm text-yellow-700 mt-1">
-                Showing sample data. Configure Firebase to use real billing records.
-                See README.md for setup instructions.
+                Showing sample data. Configure Firebase to use real billing
+                records. See README.md for setup instructions.
               </p>
             </div>
           </div>
@@ -171,88 +189,89 @@ export function BillingDataTable({
 
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Invoice
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Vendor
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Amount
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {records.map((record) => (
-              <tr key={record.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {record.invoiceNumber || "Processing..."}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {record.vendor || "Processing..."}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {record.date ? formatDate(record.date) : "Processing..."}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {record.totalAmount
-                      ? formatCurrency(record.totalAmount, record.currency)
-                      : "Processing..."}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center space-x-2">
-                    {getStatusIcon(record.status)}
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        record.status === "completed" && "text-green-700",
-                        record.status === "processing" && "text-yellow-700",
-                        record.status === "error" && "text-red-700",
-                      )}
-                    >
-                      {getStatusText(record.status)}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div className="flex items-center space-x-2">
-                    <Link
-                      to={`/records/${record.id}`}
-                      className="text-blue-600 hover:text-blue-900 transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                    {record.status === "completed" && (
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <Download className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </td>
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Invoice
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Vendor
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {records.map((record) => (
+                <tr key={record.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {record.invoiceNumber || "Processing..."}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {record.vendor || "Processing..."}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {record.date ? formatDate(record.date) : "Processing..."}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {record.totalAmount
+                        ? formatCurrency(record.totalAmount, record.currency)
+                        : "Processing..."}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center space-x-2">
+                      {getStatusIcon(record.status)}
+                      <span
+                        className={cn(
+                          "text-sm font-medium",
+                          record.status === "completed" && "text-green-700",
+                          record.status === "processing" && "text-yellow-700",
+                          record.status === "error" && "text-red-700",
+                        )}
+                      >
+                        {getStatusText(record.status)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        to={`/records/${record.id}`}
+                        className="text-blue-600 hover:text-blue-900 transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      {record.status === "completed" && (
+                        <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                          <Download className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
